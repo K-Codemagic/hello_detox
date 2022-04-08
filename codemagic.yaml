@@ -5,6 +5,8 @@ workflows:
   android-workflow:
     name: Android Detox
     environment:
+      groups:
+        - key
       node: latest
     triggering:
       events:
@@ -27,6 +29,15 @@ workflows:
       - name: Set Android SDK location
         script: |
           echo "sdk.dir=$HOME/programs/android-sdk-macosx" > "$FCI_BUILD_DIR/android/local.properties"
+      - name: Set up keystore
+        script: |
+          echo $FCI_KEYSTORE | base64 --decode > /tmp/keystore.keystore
+          cat >> "$CM_BUILD_DIR/android/key.properties" <<EOF
+          storePassword=$FCI_KEYSTORE_PASSWORD
+          keyPassword=FCI_KEY_PASSWORD
+          keyAlias=$FCI_KEY_ALIAS
+          storeFile=/tmp/keystore.keystore
+          EOF
       - name: Build with Detox
         script: |
           detox build -c android.emu.release
@@ -102,4 +113,4 @@ workflows:
     publishing:
       email:
         recipients:
-          - sbis1999@gmail.com
+          - kalgi@nevercode.io
